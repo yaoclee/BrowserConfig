@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator</title>
+    <style>
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        .icon-preview { display: inline-block; margin: 10px; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>TimeFocus Icon Generator</h1>
+    <div id="icons-container"></div>
+    
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        const container = document.getElementById('icons-container');
+        
+        // Create SVG string for the icon
+        const svgString = `
+        <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="256" cy="256" r="240" fill="#007bff" stroke="#0056b3" stroke-width="8"/>
+          <circle cx="256" cy="256" r="180" fill="none" stroke="#ffffff" stroke-width="12" opacity="0.3"/>
+          <path d="M 256 76 A 180 180 0 1 1 383.14 383.14" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round"/>
+          <circle cx="256" cy="256" r="120" fill="#ffffff" opacity="0.1"/>
+          <text x="256" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#ffffff">12</text>
+          <text x="422" y="266" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#ffffff">3</text>
+          <text x="256" y="442" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#ffffff">6</text>
+          <text x="90" y="266" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#ffffff">9</text>
+          <line x1="256" y1="256" x2="256" y2="156" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+          <line x1="256" y1="256" x2="316" y2="256" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="256" cy="256" r="12" fill="#ffffff"/>
+          <circle cx="320" cy="180" r="24" fill="#dc3545"/>
+          <path d="M 310 170 Q 315 165 320 170 Q 325 165 330 170" stroke="#28a745" stroke-width="3" fill="none"/>
+        </svg>`;
+        
+        function generateIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            const img = new Image();
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(svgBlob);
+            
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, size, size);
+                URL.revokeObjectURL(url);
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.download = `icon-${size}x${size}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.textContent = `Download ${size}x${size}`;
+                
+                const div = document.createElement('div');
+                div.className = 'icon-preview';
+                div.innerHTML = `<div>${size}x${size}</div>`;
+                div.appendChild(canvas);
+                div.appendChild(document.createElement('br'));
+                div.appendChild(link);
+                
+                container.appendChild(div);
+            };
+            
+            img.src = url;
+        }
+        
+        // Generate all sizes
+        sizes.forEach(size => generateIcon(size));
+        
+        // Add instructions
+        const instructions = document.createElement('div');
+        instructions.innerHTML = `
+            <h2>Instructions:</h2>
+            <p>1. Right-click on each canvas and "Save image as..." to the icons/ folder</p>
+            <p>2. Or click the download links below each canvas</p>
+            <p>3. Save them as icon-72x72.png, icon-96x96.png, etc.</p>
+        `;
+        document.body.insertBefore(instructions, container);
+    </script>
+</body>
+</html>

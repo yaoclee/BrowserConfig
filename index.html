@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeFocus - Pomodoro Task Planner</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Plan your tasks with Pomodoro technique">
+    <meta name="theme-color" content="#007bff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TimeFocus">
+    <meta name="msapplication-TileColor" content="#007bff">
+    <meta name="msapplication-config" content="browserconfig.xml">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
+    <link rel="mask-icon" href="icons/icon.svg" color="#007bff">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="stylesheet" href="styles.css?v=2.3">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>TimeFocus</h1>
+                    <p>Plan your tasks with Pomodoro technique</p>
+                </div>
+                <button id="settingsBtn" class="settings-btn" title="Settings">⚙️</button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Timer Section -->
+            <section class="timer-section">
+                <div class="session-selector">
+                    <button id="workBtn" class="session-btn active">Work</button>
+                    <button id="shortBreakBtn" class="session-btn">Short Break</button>
+                    <button id="longBreakBtn" class="session-btn">Long Break</button>
+                </div>
+
+                <div class="timer-display">
+                    <div class="timer-circle">
+                        <svg class="progress-ring" width="300" height="300">
+                            <circle class="progress-ring-background" cx="150" cy="150" r="140" stroke-width="8" fill="transparent"/>
+                            <circle class="progress-ring-circle" cx="150" cy="150" r="140" stroke-width="8" fill="transparent"/>
+                        </svg>
+                        <div class="timer-content">
+                            <div class="timer-time" id="timerDisplay">25:00</div>
+                            <div class="timer-label" id="timerLabel">Ready to start</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timer-controls">
+                    <button id="toggleBtn" class="btn-primary">START</button>
+                    <button id="resetBtn" class="btn-secondary">RESET</button>
+                </div>
+
+                <div class="auto-start-options">
+                    <label class="auto-checkbox-label">
+                        <input type="checkbox" id="autoStartBreak">
+                        <span class="auto-checkmark"></span>
+                        Auto start break
+                    </label>
+                    <label class="auto-checkbox-label">
+                        <input type="checkbox" id="autoStartWork">
+                        <span class="auto-checkmark"></span>
+                        Auto start work
+                    </label>
+                </div>
+
+                <div class="current-task" id="currentTask">
+                    <h3>Current Session</h3>
+                    <p id="currentTaskName">Work Session</p>
+                    <div class="task-progress" id="taskProgress">Session 1 • Focus time</div>
+                </div>
+            </section>
+
+            <!-- Task Input Section -->
+            <section class="task-input-section">
+                <h2>Add Your Tasks</h2>
+                <div class="task-form">
+                    <input type="text" id="taskDescription" placeholder="Enter task description..." maxlength="100">
+                    <input type="number" id="taskCount" placeholder="Time count" min="1" max="10" value="1">
+                    <button id="addTaskBtn">Add Task</button>
+                    <button id="bulkImportBtn" class="bulk-import-btn">Bulk Import</button>
+                </div>
+                
+                <div class="task-list" id="taskList">
+                    <!-- Tasks will be added here dynamically -->
+                </div>
+
+                <!-- Favorite Tasks Section -->
+                <div class="favorite-tasks-section">
+                    <h3>⭐ Favorite Tasks</h3>
+                    <div class="favorite-tasks-list" id="favoriteTasksList">
+                        <p class="no-favorites">No favorite tasks yet. Click the ❤️ button on any task to add it to favorites!</p>
+                    </div>
+                </div>
+
+                <div id="totalTimeDisplay" class="total-time-display"></div>
+                
+                <div class="start-time-section">
+                    <label for="startTime">Start Time:</label>
+                    <input type="time" id="startTime" title="Schedule will update automatically when you change the time">
+                    <button id="startNowBtn" class="start-now-btn">🕐 Start Now</button>
+                    <small class="time-hint">💡 Schedule updates automatically when you change the time, or click "Start Now" for current time</small>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Bulk Import Modal -->
+    <div id="bulkImportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Bulk Import Tasks</h3>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="import-instructions">
+                    <p>Enter your tasks, one per line. Format: <strong>Task description [number]</strong></p>
+                    <p>Example:</p>
+                    <code>Do math assignments 2<br>English letter 1<br>Prepare physical power point 1</code>
+                </div>
+                
+                <textarea id="bulkTaskInput" placeholder="Do math assignments 2&#10;English letter 1&#10;Prepare physical power point 1" rows="8"></textarea>
+                <div class="preview-section">
+                    <h4>Preview:</h4>
+                    <div id="taskPreview" class="task-preview">
+                        <p class="no-preview">Enter tasks above to see preview</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelImport" class="btn-secondary">Cancel</button>
+                <button id="confirmImport" class="btn-primary" disabled>Import Tasks</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Settings</h3>
+                <span class="close" id="closeSettingsModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h4>Timer Durations</h4>
+                    <div class="setting-item">
+                        <label for="workDurationInput">Work Session (minutes):</label>
+                        <input type="number" id="workDurationInput" min="1" max="60" value="25">
+                    </div>
+                    <div class="setting-item">
+                        <label for="shortBreakInput">Short Break (minutes):</label>
+                        <input type="number" id="shortBreakInput" min="1" max="30" value="5">
+                    </div>
+                    <div class="setting-item">
+                        <label for="longBreakInput">Long Break (minutes):</label>
+                        <input type="number" id="longBreakInput" min="5" max="60" value="15">
+                    </div>
+                    <div class="setting-item">
+                        <label for="longBreakIntervalInput">Long Break Interval:</label>
+                        <input type="number" id="longBreakIntervalInput" min="2" max="10" value="4">
+                        <small class="setting-hint">Every nth break will be a long break</small>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4>Notifications</h4>
+                    <div class="setting-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="notificationsEnabled" checked>
+                            <span class="checkmark"></span>
+                            Enable browser notifications
+                        </label>
+                        <small class="setting-hint">Shows notifications when sessions/breaks complete</small>
+                    </div>
+                    <div class="setting-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="soundEnabled" checked>
+                            <span class="checkmark"></span>
+                            Play notification sound
+                        </label>
+                        <small class="setting-hint">Plays a beep sound with notifications</small>
+                    </div>
+                </div>
+
+                <div class="settings-preview">
+                    <h4>Schedule Pattern Preview</h4>
+                    <p class="preview-explanation">This shows how your work sessions (W) and breaks (S=Short, L=Long) will be arranged:</p>
+                    <div id="schedulePreview" class="schedule-pattern">
+                        <!-- Preview will be generated here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="resetSettingsBtn" class="btn-secondary">Reset to Default</button>
+                <button id="saveSettingsBtn" class="btn-primary">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=2.4"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New content is available, inform user
+                                    if (confirm('New version available! Reload to update?')) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+        
+        // PWA Install Prompt
+        let deferredPrompt;
+        let installButton;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('PWA install prompt triggered');
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button after a short delay
+            setTimeout(() => {
+                showInstallButton();
+            }, 3000); // Show after 3 seconds
+        });
+        
+        window.addEventListener('appinstalled', (e) => {
+            console.log('PWA was installed');
+            hideInstallButton();
+            
+            // Show thank you message
+            if (window.app && window.app.showNotification) {
+                window.app.showNotification('🎉 TimeFocus installed successfully!', 'success');
+            }
+        });
+        
+        function showInstallButton() {
+            if (!installButton) {
+                installButton = document.createElement('button');
+                installButton.textContent = '📱 Install App';
+                installButton.className = 'install-btn';
+                installButton.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: #007bff;
+                    color: white;
+                    border: none;
+                    padding: 12px 20px;
+                    border-radius: 25px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: bold;
+                    box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+                    z-index: 1000;
+                    transition: all 0.3s ease;
+                `;
+                
+                installButton.addEventListener('mouseover', () => {
+                    installButton.style.transform = 'scale(1.05)';
+                    installButton.style.boxShadow = '0 6px 16px rgba(0,123,255,0.4)';
+                });
+                
+                installButton.addEventListener('mouseout', () => {
+                    installButton.style.transform = 'scale(1)';
+                    installButton.style.boxShadow = '0 4px 12px rgba(0,123,255,0.3)';
+                });
+                
+                installButton.addEventListener('click', installPWA);
+                document.body.appendChild(installButton);
+            }
+        }
+        
+        function hideInstallButton() {
+            if (installButton) {
+                installButton.remove();
+                installButton = null;
+            }
+        }
+        
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                    hideInstallButton();
+                });
+            }
+        }
+        
+        // Check if app is installed
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+            console.log('PWA is running in standalone mode');
+            // App is installed and running in standalone mode
+            document.body.classList.add('pwa-installed');
+        }
+    </script>
+</body>
+</html>
