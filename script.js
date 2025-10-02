@@ -42,6 +42,7 @@ class TimeFocusApp {
         this.updateSessionButtons(); // Initialize session buttons
         this.updateCurrentTask(); // Initialize current task display
         this.updateProgressRing(); // Initialize progress ring
+        this.detectSafariAndInitializeControls(); // Initialize custom number input buttons only for Safari
         this.parsedTasks = []; // Store parsed tasks for preview
         
         // Add page visibility listener for background support
@@ -52,6 +53,8 @@ class TimeFocusApp {
         // Task input elements
         this.taskDescriptionInput = document.getElementById('taskDescription');
         this.taskCountInput = document.getElementById('taskCount');
+        this.taskCountUpBtn = document.getElementById('taskCountUp');
+        this.taskCountDownBtn = document.getElementById('taskCountDown');
         this.addTaskBtn = document.getElementById('addTaskBtn');
         this.taskList = document.getElementById('taskList');
         this.startTimeInput = document.getElementById('startTime');
@@ -102,6 +105,17 @@ class TimeFocusApp {
         this.taskDescriptionInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.addTask();
         });
+        
+        // Custom number input controls (will only work in Safari)
+        if (this.taskCountUpBtn && this.taskCountDownBtn) {
+            this.taskCountUpBtn.addEventListener('click', () => this.incrementTaskCount());
+            this.taskCountDownBtn.addEventListener('click', () => this.decrementTaskCount());
+            
+            // Update button states when input value changes (Safari only)
+            this.taskCountInput.addEventListener('input', () => this.updateTaskCountButtons());
+            this.taskCountInput.addEventListener('change', () => this.updateTaskCountButtons());
+        }
+        
         this.startNowBtn.addEventListener('click', () => this.startNow());
         this.startTimeInput.addEventListener('change', () => this.onStartTimeChange());
         this.toggleBtn.addEventListener('click', () => this.toggleTimer());
@@ -214,6 +228,80 @@ class TimeFocusApp {
         this.taskDescriptionInput.value = '';
         this.taskCountInput.value = '1';
         this.renderTasks();
+    }
+
+    incrementTaskCount() {
+        // Only work in Safari
+        if (!document.body.classList.contains('safari-browser')) {
+            return;
+        }
+        
+        const currentValue = parseInt(this.taskCountInput.value) || 1;
+        const maxValue = parseInt(this.taskCountInput.getAttribute('max')) || 10;
+        
+        if (currentValue < maxValue) {
+            this.taskCountInput.value = currentValue + 1;
+            this.updateTaskCountButtons();
+        }
+    }
+
+    decrementTaskCount() {
+        // Only work in Safari
+        if (!document.body.classList.contains('safari-browser')) {
+            return;
+        }
+        
+        const currentValue = parseInt(this.taskCountInput.value) || 1;
+        const minValue = parseInt(this.taskCountInput.getAttribute('min')) || 1;
+        
+        if (currentValue > minValue) {
+            this.taskCountInput.value = currentValue - 1;
+            this.updateTaskCountButtons();
+        }
+    }
+
+    detectSafariAndInitializeControls() {
+        // Detect Safari browser
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
+                        /iPad|iPhone|iPod/.test(navigator.userAgent);
+        
+        if (isSafari) {
+            // Add Safari class to body for CSS targeting
+            document.body.classList.add('safari-browser');
+            
+            // Initialize custom controls for Safari
+            this.updateTaskCountButtons();
+        } else {
+            // For non-Safari browsers, remove the custom controls completely
+            const numberControls = document.querySelector('.number-controls');
+            if (numberControls) {
+                numberControls.style.display = 'none';
+            }
+            
+            // Ensure non-Safari browsers use standard width and padding
+            if (this.taskCountInput) {
+                this.taskCountInput.style.paddingRight = '8px';
+                this.taskCountInput.style.width = '50px';
+                this.taskCountInput.style.minWidth = '50px';
+                this.taskCountInput.style.maxWidth = '50px';
+                this.taskCountInput.style.flex = '0 0 50px';
+            }
+        }
+    }
+
+    updateTaskCountButtons() {
+        // Only update if we're in Safari
+        if (!document.body.classList.contains('safari-browser')) {
+            return;
+        }
+        
+        const currentValue = parseInt(this.taskCountInput.value) || 1;
+        const minValue = parseInt(this.taskCountInput.getAttribute('min')) || 1;
+        const maxValue = parseInt(this.taskCountInput.getAttribute('max')) || 10;
+        
+        // Disable/enable buttons based on current value
+        this.taskCountDownBtn.disabled = currentValue <= minValue;
+        this.taskCountUpBtn.disabled = currentValue >= maxValue;
     }
 
     toggleTaskCompletion(taskId) {

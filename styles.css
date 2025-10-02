@@ -112,12 +112,109 @@ main {
     border-color: #667eea;
 }
 
+/* Number Input Wrapper for Custom Controls */
+.number-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
 .task-form input[type="number"] {
     flex: 0 0 50px !important;
     width: 50px !important;
     max-width: 50px !important;
     min-width: 50px !important;
     padding: 12px 8px !important;
+}
+
+/* Safari-specific styles - increase width and padding for custom controls */
+.safari-browser .task-form input[type="number"] {
+    flex: 0 0 70px !important;
+    width: 70px !important;
+    max-width: 70px !important;
+    min-width: 70px !important;
+    padding-right: 32px !important; /* Make room for custom controls */
+}
+
+/* Custom Number Controls - hidden by default */
+.number-controls {
+    position: absolute;
+    right: 4px; /* Move left by 2px from original position */
+    top: 50%;
+    transform: translateY(-50%);
+    display: none; /* Hidden by default, will be shown in Safari via JavaScript */
+    flex-direction: column;
+    z-index: 10;
+}
+
+/* Show custom controls only in Safari */
+.safari-browser .number-controls {
+    display: flex;
+}
+
+.number-btn {
+    width: 26px; /* Slightly wider for better touch */
+    height: 21px; /* Slightly taller for better touch */
+    border: none;
+    background: #667eea;
+    color: white;
+    font-size: 13px; /* Slightly larger font */
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.number-btn-up {
+    border-radius: 4px 4px 0 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.number-btn-down {
+    border-radius: 0 0 4px 4px;
+}
+
+.number-btn:hover {
+    background: #5a6fd8;
+    transform: scale(1.05);
+}
+
+.number-btn:active {
+    background: #4c5fd6;
+    transform: scale(0.95);
+}
+
+.number-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+    .safari-browser .task-form input[type="number"] {
+        flex: 0 0 75px !important;
+        width: 75px !important;
+        max-width: 75px !important;
+        min-width: 75px !important;
+        padding-right: 35px !important; /* More space on mobile */
+    }
+    
+    .number-controls {
+        right: 5px; /* More space from edge on mobile */
+    }
+    
+    .number-btn {
+        width: 30px; /* Larger for touch */
+        height: 24px; /* Larger for touch */
+        font-size: 14px;
+    }
 }
 
 .task-form button {
